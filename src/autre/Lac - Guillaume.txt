@@ -1,0 +1,75 @@
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.stream.Collectors.*;
+
+public final class Lac {
+    private final int energieSolaire;
+    private final List<Plante> plantes;
+    private final List<Herbivore> herbivores;
+
+    public Lac(int energieSolaire, List<Plante> plantes, List<Herbivore> herbivores) {
+        this.energieSolaire = energieSolaire;
+        this.plantes = plantes;
+        this.herbivores = herbivores;
+    }
+
+    /**
+     * Avance la simulation d'un cycle.
+     */
+    public void tick() {
+        List<Plante> plantesProchainCycle = new ArrayList<>();
+        for(int i = 0; i < this.plantes.size(); i++){
+            int nombreEnfants = this.plantes.get(i).simulerCycle(energieSolaire, energieTotalPlantes());
+            while(nombreEnfants > 0){
+                Plante nouvelEnfant = new Plante(this.plantes.get(i).nomEspece,
+                        this.plantes.get(i).besoinEnergie,
+                        this.plantes.get(i).efficaciteEnergie,
+                        this.plantes.get(i).resilience,
+                        this.plantes.get(i).fertilite,
+                        this.plantes.get(i).ageFertilite,
+                        this.plantes.get(i).energieEnfant);
+                plantesProchainCycle.add(nouvelEnfant);
+                nombreEnfants--;
+            }
+            if(this.plantes.get(i).estVivant()){
+                plantesProchainCycle.add(this.plantes.get(i));
+            }
+        }
+        this.plantes.removeAll(this.plantes);
+        this.plantes.addAll(plantesProchainCycle);
+        this.imprimeRapport(System.out); //todo à éliminer après les tests.
+    }
+
+    public double energieTotalPlantes(){
+        double energieTotalPlantes = 0;
+        for(int i = 0; i < this.plantes.size(); i++) {
+            energieTotalPlantes += this.plantes.get(i).getEnergie();
+        }
+        return energieTotalPlantes;
+    }
+
+    public void imprimeRapport(PrintStream out) {
+        var especesplantes = this.plantes.stream().collect(groupingBy(
+                Plante::getNomEspece,
+                summarizingDouble(Plante::getEnergie)));
+        out.println("Il reste " + especesplantes.size() + " espèces de plantes.");
+        for (var entry : especesplantes.entrySet()) {
+            var value = entry.getValue();
+            out.println(entry.getKey() + ": " +
+                    value.getCount() + " individus qui contiennent en tout " +
+                    value.getSum() + " unités d'énergie.");
+        }
+        var especesherbivores = this.herbivores.stream().collect(groupingBy(
+                Herbivore::getNomEspece,
+                summarizingDouble(Herbivore::getEnergie)));
+        out.println("Il reste " + especesherbivores.size() + " espèces d'herbivores.");
+        for (var entry : especesherbivores.entrySet()) {
+            var value = entry.getValue();
+            out.println(entry.getKey() + ": " +
+                    value.getCount() + " individus qui contiennent en tout " +
+                    value.getSum() + " unités d'énergie.");
+        }
+    }
+}

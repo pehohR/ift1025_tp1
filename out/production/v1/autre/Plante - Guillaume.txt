@@ -1,0 +1,121 @@
+public final class Plante extends UsinePlante{
+    protected int age;
+    protected double energie;
+
+    public Plante(String nomEspece, double besoinEnergie, double efficaciteEnergie,
+                  double resilience, double fertilite, int ageFertilite, double energieEnfant){
+        this.nomEspece = nomEspece;
+        this.besoinEnergie = besoinEnergie;
+        this.efficaciteEnergie = efficaciteEnergie;
+        this.resilience = resilience;
+        this.fertilite = fertilite;
+        this.ageFertilite = ageFertilite;
+        this.energieEnfant = energieEnfant;
+        this.energie=energieEnfant;
+        this.age=0;
+    }
+
+    // Getters
+    public String getNomEspece(){
+        return this.nomEspece;
+    }
+    public double getEnergie(){
+        return this.energie;
+    }
+    public int getAge() {
+        return this.age;
+    }
+    public double getBesoinEnergie(){
+        return this.besoinEnergie;
+    }
+    public double getResilience(){
+        return this.resilience;
+    }
+    public double getFertilite(){
+        return this.fertilite;
+    }
+    public int getAgeFertilite(){
+        return this.ageFertilite;
+    }
+    public double getEnergieEnfant() {
+        return this.energieEnfant;
+    }
+
+//    // Setters
+//    public void setAge(int age){
+//        if (age >= 0){
+//            this.age = age;
+//        }
+//    }
+//    public void setEnergie(double energie){
+//        if (energie >=0){
+//            this.energie = energie;
+//        }
+//    }
+
+    // Méthodes
+
+    public int simulerCycle(double energieSolaire, double energieTotalPlantes){
+        double energieSupp = energieSolaire * this.energie / energieTotalPlantes - this.besoinEnergie;
+        int nombreEnfants = 0;
+        if(energieSupp < 0) {
+            this.testerResilience(Math.floor(Math.abs(energieSupp)));
+        }
+        else{
+            if(this.estFertile()){
+                nombreEnfants = this.testerEnfants(energieSupp);
+                energieSupp -= nombreEnfants * energieEnfant;
+            }
+            this.gagnerEnergie(energieSupp);
+            this.vieillir();
+        }
+        return nombreEnfants;
+    }
+
+    public boolean testerResilience(double energieManquante) {
+        double probSurvie = Math.pow(this.resilience, energieManquante);
+        if(Math.random() <= probSurvie){
+            this.energie -= energieManquante;
+            return true;
+        }
+        else{
+            this.energie = 0;
+            return false;
+        }
+    }
+
+    public int testerEnfants(double energie){
+        int nombreEnfants = 0;
+        while(energie >= 1){
+            if(Math.random() <= this.fertilite){
+                nombreEnfants++;
+                energie -= this.energieEnfant;
+            }
+        }
+        return nombreEnfants;
+    }
+
+    public void gagnerEnergie(double energie){
+        if(energie > this.energie) {
+            this.energie += this.efficaciteEnergie * energie;
+        }
+    }
+
+    public void vieillir(){
+        this.age++;
+    }
+
+    public boolean estFertile(){
+        return this.age >= ageFertilite;
+    }
+
+    public boolean estVivant(){
+        if(this.energie > 0){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+}
